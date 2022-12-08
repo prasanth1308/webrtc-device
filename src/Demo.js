@@ -64,7 +64,7 @@ const Demo = ({ deviceId }) => {
   useEffect(() => {
     const peerConnection = new RTCPeerConnection(config);
     peerConnectionRef.current = peerConnection;
-    const ws = new WebSocket("ws://localhost:8888");
+    const ws = new WebSocket("ws://webrtc-ra.herokuapp.com:8888");
     ws.onopen = (event) => {
       sendSocketMessage(EVENTS.INIT, {});
     };
