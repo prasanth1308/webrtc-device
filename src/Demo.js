@@ -7,6 +7,7 @@ const Demo = ({ deviceId }) => {
   const wsRef = useRef();
   const peerConnectionRef = useRef();
   const [disableJoin, setDisableJoin] = useState(false);
+  const [isPeerConnected, setPeerConnected] = useState(false);
   const config = {
     iceServers: [{ urls: ["stun:stun1.l.google.com:19302"] }],
   };
@@ -79,12 +80,22 @@ const Demo = ({ deviceId }) => {
           break;
         case EVENTS.JOIN_SUCCESS:
           setDisableJoin(true);
+          if (payload.data.autoConnect) {
+            setPeerConnected(true);
+          }
           break;
         case EVENTS.JOIN_FAILED:
           console.error("Error connecting channel");
           break;
         case EVENTS.LEFT_CHANNEL:
           setDisableJoin(false);
+          setPeerConnected(false);
+          break;
+        case EVENTS.TAM_CONNECTED:
+          setPeerConnected(true);
+          break;
+        case EVENTS.TAM_DISCONNECTED:
+          setPeerConnected(false);
           break;
         case EVENTS.TAM_ANSWER:
           await peerConnection.setRemoteDescription(
@@ -122,14 +133,18 @@ const Demo = ({ deviceId }) => {
         onClick={() =>
           sendSocketMessage("LEAVE_CHANNEL", { deviceId: deviceId })
         }
+        disabled={!disableJoin}
       >
         DISCONNECT
       </button>
       <br />
-      {disableJoin && (
+      {disableJoin && isPeerConnected ? (
         <button id="screenShareButton" onClick={() => shareScreen(deviceId)}>
           Share Screen
         </button>
+      ) : (
+        disableJoin &&
+        !isPeerConnected && <h4>{"Waiting for TAM to connect"}</h4>
       )}
     </div>
   );
